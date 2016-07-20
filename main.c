@@ -16,11 +16,19 @@ void print_list(lista_enc_t *list);
 void print_list_back(lista_enc_t *list);
 
 void free_data(lista_enc_t *list);
+
 lista_enc_t * read_data_file();
 
-
-
 void bubble_sort(lista_enc_t *string_list);
+
+struct tarefas {
+    int id;
+    int  c;
+    int  t;
+};
+typedef struct tarefas tarefa_t;
+
+tarefa_t* task;
 
 
 int main(int argc, char** argv)
@@ -28,17 +36,17 @@ int main(int argc, char** argv)
    lista_enc_t *data_list;
     
     data_list = read_data_file();
-    puts("Lista lida:");
-    print_list(data_list);
+   puts("Lista lida:");
+   print_list(data_list);
     
      
 
 
    
-    puts("==================");
-  //   puts("Ordenada");
+  //  puts("==================");
+   //  puts("Ordenada");
   //  bubble_sort(data_list);
- //   print_list(data_list);
+   // print_list(data_list);
    // puts("==================");
    // print_list_back(data_list);
 
@@ -128,20 +136,23 @@ void free_data(lista_enc_t *list)
 void print_list(lista_enc_t *list)
 {
     no_t *no;
-    char *data;
+    tarefa_t *data;
 
     if (list == NULL) {
         fprintf(stderr, "free_data: Invalid pointer\n");
         exit(EXIT_FAILURE);
     }
-
+    printf("id - C - T\n ");
     //get head
     no = obter_cabeca(list);
 
     //print them all
     while (no) {
         data = obtem_dado(no);
-        printf(  "%s/", data);
+        
+        
+        
+        printf("%d - %d - %d\n ",  data->id,data->c,data->t);
         no = obtem_proximo(no);
     }
 }
@@ -170,13 +181,14 @@ lista_enc_t * read_data_file()
 {
     FILE *fp = NULL;
     lista_enc_t *list = NULL;
-    char buffer[128];
-    char *data;
-   
+    char buffer[100];
+    int n = 0;
+    tarefa_t* task;
     no_t *no;
-    unsigned long int size;
+    int  id = 0 ;
     char *tokenPtr;
-    
+    int line = 0;
+   
     list = cria_lista_enc();
 
     if (list == NULL) {
@@ -185,37 +197,59 @@ lista_enc_t * read_data_file()
     }
 
     //try open input_file
-    fp = fopen("arqTarefas.txt", "r");
+    fp = fopen("arqTarefas2.txt", "r");
 
     if (fp == NULL) {
         fprintf(stderr, "read_data_file: Error opening file\n");
         exit(EXIT_FAILURE);
     }
 
-    while (fgets(buffer, 100, fp) ) {
-        if (buffer == NULL) {            fprintf(stderr, "read_data_file: Error reading file\n");
+    while (fgets(buffer, 128, fp)!=0) {
+        if (buffer == NULL)
+        {   fprintf(stderr, "read_data_file: Error reading file\n");
             exit(EXIT_FAILURE);
         }
-       
+        printf("buffer\n%s\n",buffer);
         
        
-        
-        tokenPtr = strtok(buffer, " ;.\n");
-        while(tokenPtr != NULL)
-        {
-            printf("%s\n",tokenPtr);
+        n  = 0;
+        if(line > 0){
             
+         tokenPtr = strtok(buffer, ";");
+         task =  malloc(sizeof(tarefa_t) );
         
-            size = strlen(tokenPtr);
-            
-         data = (char*)malloc(size );
-                strncpy(data, tokenPtr, size  );
-                no = cria_no(data);
-                add_cauda(list, no);
-            tokenPtr = strtok(NULL, " ;\n");
-
-        }}
+        
     
+            while(tokenPtr != NULL)
+                
+            {
+               
+                  if ( n == 0){
+                      printf("id %d\n",id);
+                      printf("C  %s\n",tokenPtr);
+                    task->id = id;
+                    task->c =  atoi(tokenPtr);
+                    
+                    id++;
+                      n++;}
+                      else {
+                          printf("T  %s\n",tokenPtr);
+                          task->t = atoi(tokenPtr);
+                          n = 0;
+                          no = cria_no(task);
+                          add_cauda(list, no);
+                      }
+                
+        
+        
+        
+                tokenPtr = strtok(NULL, ";");}
+        
+            
+        
+        }
+        line = line + 1;
+    }
 
     fclose(fp);
 
