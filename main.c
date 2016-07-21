@@ -28,42 +28,39 @@ static const struct option long_options[] = {
 
 int main(int argc, char** argv)
 {
-    FILE *fp;
-    char ch;
+//    FILE *fp;
+//    char ch;
     char * input_file = argv[1];
-
+    int cpu;
     lista_enc_t *data_list;
 
-    if (argc!=2){
+    if (argc<=1){
         printf("Faltou informar o nome do arquivo");
         exit(1);
     }
 
-    fp = fopen(argv[1], "r");    //abre o arquivo
-
-    if (fp == NULL){
-        printf("Arquivo não pode ser aberto");
-        exit(1);
-    }
-/*
-    ch  = getc(fp);
-    while(ch!=EOF)
-    {
-        putchar(ch);    //imprime na tela
-        ch = getc(fp);
-    }
-*/
+//    fp = fopen(argv[1], "r");    //abre o arquivo
+//
+//    if (fp == NULL){
+//        printf("Arquivo não pode ser aberto");
+//        exit(1);
+//    }
     data_list = read_data_file(input_file);
+
 
     puts("Lista lida:");
     print_list(data_list);
     puts("\n==================");
     //print_list_back(data_list);
 
-    fclose(fp);	// fecha o arquivo arq.
+
+    cpu = mmc(data_list);   // tempo total da CPU
+    printf("CPU: %d",cpu);
+
+
+//    fclose(fp);	// fecha o arquivo arq.
 
     free_data(data_list);
-
 
 return 0;
 
@@ -169,7 +166,6 @@ lista_enc_t * read_data_file(char* input_file)
     task_t* task;
     no_t* no;
 
-
     list = cria_lista_enc();
 
     if (list == NULL)
@@ -194,11 +190,6 @@ lista_enc_t * read_data_file(char* input_file)
 
     while(!feof(fp))
     {
-        if (fp == NULL)
-        {
-            fprintf(stderr, "read_data_file: Error reading file\n");
-            exit(EXIT_FAILURE);
-        }
 
         fgets(buffer,100,fp);   //pega uma linha ou 100 caracteres
         sscanf(buffer, "T%d;%d;%d", &id,&c,&t);

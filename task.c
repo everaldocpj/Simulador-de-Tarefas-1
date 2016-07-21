@@ -89,7 +89,42 @@ int obtem_state(task_t* task)   //state
     return x;
 }
 
-int mmc(lista_enc_t* list)
+int mmc(lista_enc_t* lista)
 {
-    return 12;
+    unsigned int resto, a,b, x, y, mmc=1;
+    no_t *no = NULL;
+    task_t* task;
+
+    if (lista == NULL)
+    {
+        fprintf(stderr,"mmc: ponteiros invalidos");
+        exit(EXIT_FAILURE);
+    }
+
+    no = obter_cabeca(lista);    //get head
+
+    while(no)
+    {
+        task = obtem_dado(no);
+        a = obtem_t(task);
+        b = mmc;
+        x = a;
+        y = b;
+        printf("MMC: %d, a %d, b %d\n",mmc,a ,b);
+
+        do{
+            resto = x%y;
+            x = y;
+            y = resto;
+        printf("resto: %d\n",resto);
+
+        } while(resto != 0);
+
+        printf("x: %d\n",x);
+
+        mmc = a*b/x;
+
+        no = obtem_proximo(no);
+    }
+    return mmc;
 }
