@@ -28,11 +28,6 @@ struct task
     unsigned long int c; //tempo de computac˜ao da tarefa. E o tempo que processo leva para ser executado completamente
 };
 
-struct escalonador
-{
-    int tempo;
-    lista_enc_t* lista;
-};
 
 // Cria uma nova tarefa
 task_t *cria_task(int id, int c, int t)
@@ -82,6 +77,37 @@ int obtem_state(task_t* task)   //state
     return x;
 }
 
+void ver_c_t(lista_enc_t* lista)
+{
+    unsigned int c,t;
+    float ver_ct=0;
+    no_t *no = NULL;
+    task_t* task;
+
+    if (lista == NULL)
+    {
+        fprintf(stderr,"mmc: ponteiros invalidos");
+        exit(EXIT_FAILURE);
+    }
+
+    no = obter_cabeca(lista);    //get head
+
+    while(no)
+    {
+        task = obtem_dado(no);
+        c = obtem_c(task);
+        t = obtem_t(task);
+        ver_ct = ver_ct + c/t;
+
+        no = obtem_proximo(no);
+    }
+    if(ver_ct>1)
+    {
+        printf("Relacao C/T superior a 1");
+        exit(1);
+    }
+}
+
 int mmc(lista_enc_t* lista)
 {
     unsigned int resto, a,b, x, y, mmc=1;
@@ -118,8 +144,24 @@ int mmc(lista_enc_t* lista)
     return mmc;
 }
 
-escalonador_t* escal_task(lista_enc_t* lista)
+task_t* escal_task(int i, lista_enc_t* lista)
 {
-    return NULL;
+    no_t* no;
+    task_t* task;
 
+    no = obter_cabeca(lista);
+    while(no)
+    {
+        task = obtem_dado(no);
+        if((i%task->t)==0){
+            printf("No tempo %d a tarefa %d esta pronta\n",i,task->id);
+            if(task->state == P_STOPPED)
+                task->state = P_READY;
+            if(task->state == P_RUNNIG)
+                task->ticks++;
+        }
+        no = obtem_proximo(no);
+    }
+    return task;
 }
+

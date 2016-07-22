@@ -31,9 +31,9 @@ static const struct option long_options[] = {
 int main(int argc, char** argv)
 {
     char * input_file = argv[1];
-    int hipert;
+    unsigned int hipert,i;
     lista_enc_t *data_list;
-    escalonador_t* escalonador;
+    task_t* task;
 
     if (argc<=1)
     {
@@ -41,15 +41,9 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-//    fp = fopen(argv[1], "r");    //abre o arquivo
-//
-//    if (fp == NULL){
-//        printf("Arquivo não pode ser aberto");
-//        exit(1);
-//    }
-//    fclose(fp);	// fecha o arquivo arq.
-
     data_list = read_data_file(input_file);
+
+    ver_c_t(data_list);
 
     bubble_sort(data_list);
 
@@ -63,9 +57,13 @@ int main(int argc, char** argv)
     hipert = mmc(data_list);   // tempo total da CPU (mmc dos periodos)
     printf("Hiper periodo de tarefas: %d\n",hipert);
 
-     salvaAquivo (data_list, 3, 24 );
+    for(i=0; i<=hipert; i++)
+    {
+        task = escal_task(i, data_list);
 
-    //escalonador = escal_task(data_list);
+    }
+
+     salvaAquivo (data_list, 3, hipert );
 
 
     free_data(data_list);
@@ -207,8 +205,7 @@ lista_enc_t * read_data_file(char* input_file){
     return list;
 }
 
-void bubble_sort(lista_enc_t *string_list)
- {
+void bubble_sort(lista_enc_t *string_list) {
      no_t *meu_no;
      no_t *pro_no;
 
@@ -258,8 +255,8 @@ void bubble_sort(lista_enc_t *string_list)
      }
     printf("ti: %d, dataA: %d, dataB: %d\n",i, data_a,data_b);
 
-
  }
+
 
  int salvaAquivo (lista_enc_t *list, int numTarefas, int mmc ){
 
@@ -279,8 +276,8 @@ void bubble_sort(lista_enc_t *string_list)
     }
 
 
-    fprintf (fp, "\\documentclass[a4paper,10pt]{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage[brazil]{babel}\n\n\\usepackage{listings}\n\\usepackage{listingsutf8}\n\\usepackage{rtsched}\n\n%%opening\n\\title{Diagrama de execução}\n\\author{Everaldo\\_1\\\
-                 \nJose Nicolau\\_2}\n\n\\begin{document}\n\n\\maketitle\n\n\\begin{figure}[h]\n\\centering %%Cria ambiente, tarefas, escala de tempo\n\n ");
+    fprintf (fp, "\\documentclass[a4paper,10pt]{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage[brazil]{babel}\n\n\\usepackage{listings}\n\\usepackage{listingsutf8}\n\\usepackage{rtsched}\n\n%%opening\n\\title{Escalonamento de tarefas}\n\\author{Everaldo\\ \\\
+                 \nJose Nicolau\\}\n\n\\begin{document}\n\n\\maketitle\n\n\\begin{figure}[h]\n\\centering %%Cria ambiente, tarefas, escala de tempo\n\n ");
 
           fprintf (fp, "\\begin{RTGrid}[nosymbols=1,width=10cm]{%d}{%d}\n\n",numTarefas + 1,mmc);
           fprintf (fp, "\\RowLabel{1}{$\tau_1$}\n");
@@ -310,7 +307,7 @@ void bubble_sort(lista_enc_t *string_list)
 
     //final do arquivo
     fprintf (fp, "\\end{RTGrid}\n");
-    fprintf (fp, "\\caption{Exemplo de escalonamento para duas tarefas.}\n");
+    fprintf (fp, "\\caption{Escalonamento de tarefas.}\n");
     fprintf (fp, "\\label{fig:ex1}\n");
     fprintf (fp ,"\\end{figure}\n");
     fprintf (fp, "\\end{document}\n");
