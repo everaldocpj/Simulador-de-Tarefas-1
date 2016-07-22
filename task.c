@@ -20,24 +20,18 @@ struct task
 {
     unsigned int id;   // identificador
     unsigned int prior; // prioridade
-    unsigned int c; //tempo de computac˜ao da tarefa. E o tempo que processo leva para ser executado completamente
-    unsigned int t; //perıodo de ativac˜ao
-    TASK_STATE_T state;
+    TASK_STATE_T state; //estado atual
+    unsigned long int ticks; //tempo do sistema na ultima execucao
+    unsigned long int t; //perıodo de ativac˜ao //Perıodo de execucao, rotinas temporizadas, bloqueio por tempo
+    unsigned long ticks2block;  //Quantidade de tempo restante para bloqueio
+    unsigned long int exec_ticks; // Quantidade de tempo executado
+    unsigned long int c; //tempo de computac˜ao da tarefa. E o tempo que processo leva para ser executado completamente
+};
 
-/*
-//estado atual
- //   TASK_STATE uc_status;
-//tempo do sistema na ´ ultima execuc¸˜ ao
-    unsigned long ul_ticks;
-//Per´ ıodo de execuc¸˜ ao, rotinas temporizadas, bloqueio por tempo
-    unsigned long ul_period_ticks;
-//Quantidade de tempo restante para bloqueio
-    unsigned long l_ticks2block;
-// Quantidade de tempo executado
-    unsigned long l_exec_ticks;
-// Tempo de execuc¸˜ ao
-    unsigned long ul_comp_time;
-    */
+struct escalonador
+{
+    int tempo;
+    lista_enc_t* lista;
 };
 
 // Cria uma nova tarefa
@@ -51,10 +45,9 @@ task_t *cria_task(int id, int c, int t)
     }
 
     p->id = id;
-    p->prior = 0;
     p->c = c;
     p->t = t;
-    p->state = 0;
+    p->state = 2;
 
     return p;
 }
@@ -110,21 +103,23 @@ int mmc(lista_enc_t* lista)
         b = mmc;
         x = a;
         y = b;
-        printf("MMC: %d, a %d, b %d\n",mmc,a ,b);
 
         do{
             resto = x%y;
             x = y;
             y = resto;
-        printf("resto: %d\n",resto);
 
         } while(resto != 0);
-
-        printf("x: %d\n",x);
 
         mmc = a*b/x;
 
         no = obtem_proximo(no);
     }
     return mmc;
+}
+
+escalonador_t* escal_task(lista_enc_t* lista)
+{
+    return NULL;
+
 }

@@ -12,13 +12,15 @@
 #define TRUE 1
 #define FALSE 0
 
-static void usage(void);
-
 void print_list(lista_enc_t *list);
 void print_list_back(lista_enc_t *list);
 
 void free_data(lista_enc_t *list);
 lista_enc_t * read_data_file(char* input_file);
+
+void bubble_sort(lista_enc_t *string_list);
+
+int salvaAquivo (lista_enc_t *list, int numTarefas, int mmc );
 
 static const struct option long_options[] = {
     { "list", required_argument, NULL, 'l'},
@@ -28,13 +30,13 @@ static const struct option long_options[] = {
 
 int main(int argc, char** argv)
 {
-//    FILE *fp;
-//    char ch;
     char * input_file = argv[1];
-    int cpu;
+    int hipert;
     lista_enc_t *data_list;
+    escalonador_t* escalonador;
 
-    if (argc<=1){
+    if (argc<=1)
+    {
         printf("Faltou informar o nome do arquivo");
         exit(1);
     }
@@ -45,7 +47,11 @@ int main(int argc, char** argv)
 //        printf("Arquivo não pode ser aberto");
 //        exit(1);
 //    }
+//    fclose(fp);	// fecha o arquivo arq.
+
     data_list = read_data_file(input_file);
+
+    bubble_sort(data_list);
 
 
     puts("Lista lida:");
@@ -54,23 +60,18 @@ int main(int argc, char** argv)
     //print_list_back(data_list);
 
 
-    cpu = mmc(data_list);   // tempo total da CPU
-    printf("CPU: %d",cpu);
+    hipert = mmc(data_list);   // tempo total da CPU (mmc dos periodos)
+    printf("Hiper periodo de tarefas: %d\n",hipert);
 
+     salvaAquivo (data_list, 3, 24 );
 
-//    fclose(fp);	// fecha o arquivo arq.
+    //escalonador = escal_task(data_list);
+
 
     free_data(data_list);
 
 return 0;
 
-}
-
-static void usage(void) {
-    puts("Simulador de tarefas");
-        puts("--------------------------------");
-
-    exit(EXIT_FAILURE);
 }
 
 
@@ -110,8 +111,6 @@ void print_list(lista_enc_t *list)
 {
     int id, c, t;
     no_t *no;
-    char *data;
-
     task_t* task;
 
     if (list == NULL)
@@ -124,18 +123,18 @@ void print_list(lista_enc_t *list)
     no = obter_cabeca(list);
 
     //print them all
-    while (no)
-    {
-        task = (char*)obtem_dado(no);
+    while (no){
+        task = obtem_dado(no);
         id = obtem_id(task);
-        printf("id: %d\n", id);
+        c = obtem_c(task);
+        t = obtem_t(task);
+        printf("id: %d, C: %d, T: %d\n", id,c,t);
         no = obtem_proximo(no);
     }
 }
 
 
-void print_list_back(lista_enc_t *list)
-{
+void print_list_back(lista_enc_t *list){
     no_t *no;
     char *data;
 
@@ -156,8 +155,9 @@ void print_list_back(lista_enc_t *list)
         no = obtem_anterior(no);
     }
 }
-lista_enc_t * read_data_file(char* input_file)
-{
+
+
+lista_enc_t * read_data_file(char* input_file){
     FILE *fp = NULL;
     char buffer[100];   //leitura de dados
     int id, c, t;
@@ -184,16 +184,16 @@ lista_enc_t * read_data_file(char* input_file)
     }
 
     fgets(buffer,100,fp);   // le a 1a linha
-    printf("buffer: %s\n", buffer);
+    //printf("buffer: %s\n", buffer);
     fgets(buffer,100,fp);   // le a 2a linha
-    printf("buffer: %s\n", buffer);
+    //printf("buffer: %s\n", buffer);
 
     while(!feof(fp))
     {
 
         fgets(buffer,100,fp);   //pega uma linha ou 100 caracteres
         sscanf(buffer, "T%d;%d;%d", &id,&c,&t);
-        printf("id: %d, c: %d, t: %d\n",id,c,t);
+        //printf("id: %d, c: %d, t: %d\n",id,c,t);
 
         task = cria_task(id,c,t);
 
@@ -205,4 +205,120 @@ lista_enc_t * read_data_file(char* input_file)
     fclose(fp);
 
     return list;
+}
+
+void bubble_sort(lista_enc_t *string_list)
+ {
+     no_t *meu_no;
+     no_t *pro_no;
+
+    int data_a;
+    int data_b;
+
+    int i = 0;
+
+    int swaped = TRUE;
+
+    task_t * task;
+
+
+    while (swaped == TRUE)
+    {
+        swaped = FALSE;
+        meu_no = obter_cabeca(string_list);
+
+        while (obtem_proximo(meu_no) != NULL)
+        {
+            pro_no = obtem_proximo(meu_no);
+            task = obtem_dado(meu_no);
+
+            data_a = obtem_t(task);
+            task = obtem_dado(pro_no);
+            data_b = obtem_t(task);
+
+            if (data_b < data_a)
+            {
+                //puts("SWAP");
+                swap_list(string_list, meu_no, pro_no);
+
+                swaped = TRUE;
+                meu_no = obtem_proximo(pro_no);
+            }
+            else
+                meu_no = pro_no;
+
+             //printf("\t%d", data_a);
+             //printf("\t%d", data_b);
+
+             i++;
+         }
+         //puts("==================");
+         //print_list(string_list);
+         //getchar();
+     }
+    printf("ti: %d, dataA: %d, dataB: %d\n",i, data_a,data_b);
+
+
+ }
+
+ int salvaAquivo (lista_enc_t *list, int numTarefas, int mmc ){
+
+    FILE *fp = NULL;
+    int i,j;
+    int T = 0;
+    int numT = 0;
+    int executeIn = 0;
+    int executeOut = 0;
+
+
+    fp = fopen("simuladorTarefasSaida.tex", "w");
+
+    if (fp == NULL) {
+        fprintf(stderr, "read_data_file: Error opening file\n");
+        exit(EXIT_FAILURE);
+    }
+
+
+    fprintf (fp, "\\documentclass[a4paper,10pt]{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage[brazil]{babel}\n\n\\usepackage{listings}\n\\usepackage{listingsutf8}\n\\usepackage{rtsched}\n\n%%opening\n\\title{Diagrama de execução}\n\\author{Everaldo\\_1\\\
+                 \nJose Nicolau\\_2}\n\n\\begin{document}\n\n\\maketitle\n\n\\begin{figure}[h]\n\\centering %%Cria ambiente, tarefas, escala de tempo\n\n ");
+
+          fprintf (fp, "\\begin{RTGrid}[nosymbols=1,width=10cm]{%d}{%d}\n\n",numTarefas + 1,mmc);
+          fprintf (fp, "\\RowLabel{1}{$\tau_1$}\n");
+          //for aqui//
+          //tarefa #
+    for (i= 0; i < (numTarefas + 1); i++){
+         // fprintf (fp, "tarefa %d\n\n",i);
+    for (j= 0; j < numTarefas; j++){
+
+        fprintf (fp, "\\TaskArrDead{%d}{%d}{%d}\n",i,T,numT);}
+          //talvez outro for aqui//
+          // execução da tarefa
+        // fprintf (fp, "execução da tarefa %d\n\n", i);
+
+
+    for (j= 0; j < numTarefas; j++){
+
+
+        fprintf (fp, "\\TaskExecution{%d}{%d}{%d}\n",i,executeIn,executeOut);}
+    }
+          // Utilização do processador
+          fprintf (fp, "\\RowLabel{%d}{CPU}\n",numTarefas + 1);
+
+          //outro for
+          fprintf (fp, "\\TaskExecution{%d}{%d}{%d}\n",numTarefas + 1, executeIn,executeOut);
+
+
+    //final do arquivo
+    fprintf (fp, "\\end{RTGrid}\n");
+    fprintf (fp, "\\caption{Exemplo de escalonamento para duas tarefas.}\n");
+    fprintf (fp, "\\label{fig:ex1}\n");
+    fprintf (fp ,"\\end{figure}\n");
+    fprintf (fp, "\\end{document}\n");
+
+    fclose(fp);
+    system("pause");
+    return 0;
+
+
+
 }
